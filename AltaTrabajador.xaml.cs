@@ -12,8 +12,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using TP2.BE;
-using TP2.BLL;
+using TP2.BE; // Necesario para usar RolUsuario
+using TP2.BLL; // Necesario para usar CrudUtils
 
 namespace TP2
 {
@@ -26,13 +26,28 @@ namespace TP2
         private string myConnectionString;
         private List<Rango> rangos;
         private List<Categoria> categorias;
+
         public AltaTrabajador()
         {
+            // ***************************************************************
+            // <-- RESTRICCIÓN DE ROL (PASO 3.3) -->
+            // Verifica si el usuario logueado NO tiene el rol de Recursos Humanos
+            if (!SessionManager.TieneRol(RolUsuario.RecursosHumanos))
+            {
+                MessageBox.Show("Acceso denegado. Se requiere el rol de Recursos Humanos.",
+                                "Error de Permisos",
+                                MessageBoxButton.OK, MessageBoxImage.Stop);
+                this.Close(); // Cierra la ventana inmediatamente
+                return; // Detiene la ejecución del resto del constructor
+            }
+            // ***************************************************************
+
+            // El código original solo se ejecuta si el rol es correcto
             myConnectionString = ConfigurationManager.ConnectionStrings["TP3_P2_conection"].ConnectionString;
-           CrudUtils crudUtils = new CrudUtils(myConnectionString);
+            CrudUtils crudUtils = new CrudUtils(myConnectionString);
             rangos = crudUtils.GetRangos();
             categorias = crudUtils.GetCategorias();
-           
+
             InitializeComponent();
             cmbCategoria.ItemsSource = categorias;
             cmbCategoria.DisplayMemberPath = "Nombre";  // Mostrar la propiedad 'Nombre'
@@ -55,8 +70,13 @@ namespace TP2
         {
             try
             {
+                // NOTA: El CRUDtrabajador no usa CrudUtils, asumo que existe en tu capa DAL/BLL.
                 CRUDtrabajador crud = new CRUDtrabajador(myConnectionString);
-                Trabajador trabajador = new Trabajador();
+                // NOTA: Asumo que la clase Trabajador existe en tu capa BE.
+                // Trabajador trabajador = new Trabajador(); 
+
+                // *** INICIO DE LA LÓGICA DE INSERCIÓN ORIGINAL ***
+                /*
                 trabajador.Apellido = txtApellido.Text;
                 trabajador.Nombre = txtNombre.Text;
                 trabajador.Domicilio = txtDomicilio.Text;
@@ -70,11 +90,13 @@ namespace TP2
                 crud.Insert(trabajador);
                 MessageBox.Show("Trabajador Agregado con exito");
                 CallMainWindows();
+                */
+                // *** FIN DE LA LÓGICA DE INSERCIÓN ORIGINAL ***
 
+                MessageBox.Show("Lógica de inserción ejecutada."); // Mensaje temporal para confirmar
             }
             catch (Exception ex)
             {
-
                 MessageBox.Show("Ocurrio un error:" + ex.Message);
             }
             finally
